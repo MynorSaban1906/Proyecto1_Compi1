@@ -1,0 +1,50 @@
+
+valor -> Digito+("."? Digito+)?
+
+id     -> ('#')? Letra (letra |Digito|'-')*
+enteros -> (Digito)+ ('px')?
+
+etiqueta ->   <. / ?. (letra|digito|simbolo)* >
+
+
+
+consola 
+ingrese nombre : >  
+ingrese codigo : >
+
+
+
+
+codigo:
+print(ingrese nombre : )
+String nombrep= entrada.nextLine();
+
+if(nombrep.length() !=0 && nombrep.equals("")){
+    
+}
+else{
+    print (ingrese el nombre : )
+}
+
+
+
+
+
+
+
+clase producto
+object arreglo []= new object[100];
+
+ producto producto (Nombre , Precio)  
+this.nombre= Nombre;
+this.precio=Precio;
+
+VOID AGREGAR (nombre , precio)
+		for (int i = 0; i < arreglo.length(); i++) {
+			if(arreglo[1]!=NULL)
+                producto P = new producto();
+
+			    arreglo[i] = p.AGREGAR(azucar,100)
+		}
+VOID ELIMAR 
+VOID PRECIO
