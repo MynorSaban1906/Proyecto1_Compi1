@@ -5,7 +5,7 @@ from tkinter import filedialog      # filechooser
 from tkinter import scrolledtext    # textarea
 from tkinter import messagebox      # message box
 from analizador import *          # llamando a una funcion externa
-
+from AnalisisJs import *
 
 class GUI:
  # Metodo que contiene la definicion de la interfaz grafica 
@@ -62,13 +62,13 @@ class GUI:
         self.txtConsola.delete("1.0", END)
         self.txtConsola.insert("1.0", retorno)
        # messagebox.showinfo('Project 1', 'Analysis Finished')
-        print("simbolos \n")
-        miScanner.imprimirSimbolos()
-        print("errores \n")
-        miScanner.imprimirErrores()
-        print(" reservadas \n")
-        miScanner.imprimirReservadas()
-
+        #print("simbolos \n")
+        #miScanner.imprimirSimbolos()
+        #print("errores \n")
+        #miScanner.imprimirErrores()
+        #print(" reservadas \n")
+        #miScanner.imprimirReservadas()
+    
 
     # Dispara el Filechooser
     def abrirFile(self):
@@ -77,7 +77,7 @@ class GUI:
             archi1=open(nameFile, "r", encoding="utf-8")
             contenido=archi1.read()
             archi1.close()
-            self.txtEntrada.delete("1.0", END) 
+            self.txtEntrada.delete("1.0", END)
             self.txtEntrada.insert("1.0", contenido)
 
 
