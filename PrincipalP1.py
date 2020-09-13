@@ -4,21 +4,43 @@ from tkinter import Menu            # barra de tareas
 from tkinter import filedialog      # filechooser
 from tkinter import scrolledtext    # textarea
 from tkinter import messagebox      # message box
-from analizador import *          # llamando a una funcion externa
-from AnalisisJs import *
+from pru import *     # llamando a una funcion externa
+#from AnalisisJs import *
 
 class GUI:
  # Metodo que contiene la definicion de la interfaz grafica 
     def __init__(self):
         self.window = Tk()
+        
         self.txtEntrada = Entry(self.window,width=10)
         self.txtConsola = Entry(self.window,width=10)
         # Propiedades de la ventana
         self.window.title("Proyecto 1 - ML WEB EDITOR")
         self.window.geometry('1000x700')
         self.window.configure(bg = '#9ACFEF')
-        self.lbl = Label(self.window, text="ML WEB EDITOR", font=("Arial Bold", 15))
-        self.lbl.place(x=440, y = 10)
+    
+        root = self.window
+        states = []
+        lenguaje = IntVar()
+        chk = Checkbutton(root, text="JS",  variable=lenguaje,command=self.seleccionar(lenguaje))
+
+        chk.pack(side=LEFT)
+        chk.place(x=0,y=0)
+        
+        chk = Checkbutton(root, text="CSS",  variable=lenguaje,command=self.seleccionar(lenguaje))
+
+        chk.pack(side=LEFT)
+        chk.place(x=50,y=0)
+
+        chk3 = Checkbutton(root, text="HTML",  variable=lenguaje, 
+            onvalue=1, offvalue=0,command=self.seleccionar(lenguaje))
+
+        chk3.pack(side=LEFT)
+        chk3.place(x=100,y=0)
+        
+
+       
+              
 
         # propiedades del menu 
         self.menu = Menu(self.window)
@@ -28,7 +50,7 @@ class GUI:
         self.file_item.add_command(label='Analyze')
         self.file_item.add_separator()
         self.file_item.add_command(label='Exit')
-
+ 
         self.report_item = Menu(self.menu)    # menu Reports
         self.report_item.add_separator()
         self.report_item.add_command(label='Errors')
@@ -57,18 +79,16 @@ class GUI:
 
     def Analyze(self):
         entrada = self.txtEntrada.get("1.0", END) #fila 1 col 0 hasta fila 2 col 10
-        miScanner = Scanner()
-        retorno = miScanner.analizar(entrada)
-        self.txtConsola.delete("1.0", END)
-        self.txtConsola.insert("1.0", retorno)
-       # messagebox.showinfo('Project 1', 'Analysis Finished')
-        #print("simbolos \n")
-        #miScanner.imprimirSimbolos()
-        #print("errores \n")
+        #miScanner = Scanner()
+        #retorno = miScanner.analizar(entrada)
         #miScanner.imprimirErrores()
-        #print(" reservadas \n")
-        #miScanner.imprimirReservadas()
+        analiza= Scanner()
+        retorno =analiza.analizar(entrada)
+        #self.txtConsola.delete("1.0", END)
+        #self.txtConsola.insert("1.0", retorno)
     
+        
+        
 
     # Dispara el Filechooser
     def abrirFile(self):
@@ -79,6 +99,14 @@ class GUI:
             archi1.close()
             self.txtEntrada.delete("1.0", END)
             self.txtEntrada.insert("1.0", contenido)
+    
+    def seleccionar(self,lenguaje):
+        cadena = ""
+        if (lenguaje.get()):
+            print("selecciono css")
+        else:
+            print(" no css")
 
+        
 
 start = GUI()

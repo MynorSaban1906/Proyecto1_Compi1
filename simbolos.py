@@ -81,6 +81,7 @@ class Simbolo(Enum):
     right=87
     marginbottom=88
     bottom=89
+    font=90
 
     #expresiones regulares
     epsilon=38

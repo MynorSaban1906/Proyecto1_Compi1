@@ -1,11 +1,6 @@
-from Token import Token
-from Token import Tipo
-# from NOMBRE.PY import CLASE|METODO|ENUM
+from simbolos import *
 
-def hola():
-    print("")
-
-class Scanner:
+class analizador:
     lista_tokens = list()   # lista de tokens
     lista_errores = list()  # lista errores lexico
     pos_errores = list()    # lista de posiciones de errores

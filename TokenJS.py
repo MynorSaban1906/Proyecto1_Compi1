@@ -61,3 +61,16 @@ class Token:
         self.valorToken = valor
     def __str__(self):
         return f"Palabra Reservada {self.valorToken}"
+
+class Errores:
+    valorToken = ""
+    posicion=0
+    colum=0
+    def __init__(self, valor,pos,columnas):
+        
+        self.valorToken = valor
+        self.posicion =pos
+        self.colum=columnas
+
+    def __str__(self):
+        return f"Simbolo Error {self.valorToken}  posicion {self.posicion}  columna  {self.colum }"

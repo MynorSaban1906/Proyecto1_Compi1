@@ -1,6 +1,6 @@
 from simbolos import *
 
-class Scanner:
+class analizadorCSS:
     lista_tokens = list()   # lista de tokens
     lista_errores = list()  # lista errores lexico
     pos_errores = list()    # lista de posiciones de errores
@@ -20,104 +20,78 @@ class Scanner:
         self.lista_reservadas=list()
         self.estado = 0
         self.lexema = ""
+
         
     #--------------------------- ESTADO0 ---------------------------
     def analizar(self, cadena):
         self.entrada = cadena + "$"
-        self.estado = 0
         self.caracterActual = ''
-        self.siguiente=0
-        self.pos = 0    # almacena la posicion del caracter que se esta analizando
-        #for self.pos in range(0,len(self.entrada)-1):
+        self.pos = 0
+
         while self.pos < len(self.entrada):
-            self.siguiente=self.pos
-            #print (self.estado)
-            self.caracterActual = self.entrada[self.pos]
-            if(self.pos==len(self.entrada)-1):
-                continue
-            else:
-                self.siguiente+=1
+            self.caracterActual = self.entrada[self.pos]            
             
-            if((self.caracterActual==("{") or self.caracterActual==( "}") or self.caracterActual== (":") or self.caracterActual==(";") or 
-            self.caracterActual==(",") or self.caracterActual==("<") or self.caracterActual==(">") or self.caracterActual==("!=")
-            or self.caracterActual==("==") or self.caracterActual==("=") or self.caracterActual==(">=") or self.caracterActual==("<=")  or 
-            self.caracterActual==("+") or self.caracterActual==("-") or self.caracterActual==("*") or self.caracterActual==("/") or self.caracterActual==("(")
-            or self.caracterActual==("0") or self.caracterActual==("=>") or self.caracterActual==("'") or self.caracterActual==("|"))  ):
-                self.estado=1
-                 #PASA AL ESTADO 1 DONDE ESTAN SOLO SIMBOLOS DEL SISTEMA
-               
-                if self.caracterActual == "{":
-                    self.addToken(Simbolo.llaveIzq, "{",self.pos)                   
-                elif self.caracterActual == "}":
-                    self.addToken(Simbolo.llaveDer, "}",self.pos)
-                elif self.caracterActual == ":":
-                    self.addToken(Simbolo.Dpuntos, ":",self.pos)
-                elif self.caracterActual == ";":
-                    self.addToken(Simbolo.Pcoma, ";",self.pos)
-                elif self.caracterActual == ",":
-                    self.addToken(Simbolo.coma, ",",self.pos)
-                elif self.caracterActual == "<":
-                    self.addToken(Simbolo.MenorQ, "<",self.pos)
-                elif self.caracterActual == ">":
-                    self.addToken(Simbolo.MayorQ, ">",self.pos)
-                elif self.caracterActual == "!=":
-                    self.addToken(Simbolo.Distinto, "!=",self.pos)
-                elif self.caracterActual == "=":
-                    self.addToken(Simbolo.Igual, "=",self.pos)
-                elif self.caracterActual == "<=":
-                    self.addToken(Simbolo.MenorIQ, "<=",self.pos)
-                elif self.caracterActual == ">=":
-                    self.addToken(Simbolo.MayorIQ, ">=",self.pos)
-                elif self.caracterActual == "+":
-                    self.addToken(Simbolo.Mas, "+",self.pos)
-                elif self.caracterActual == "-":
-                    self.addToken(Simbolo.Menos, "-",self.pos)
-                elif self.caracterActual == "*":
-                    self.addToken(Simbolo.Asterisco, "*",self.pos)
-                elif self.caracterActual == "/":
-                    self.addToken(Simbolo.Division, "/",self.pos)
-                elif self.caracterActual == "(":
-                    self.addToken(Simbolo.ParentIzq, "(",pos)
-                elif self.caracterActual == ")":
-                    self.addToken(Simbolo.ParentDer, ")",self.pos)
-                elif self.caracterActual == "'":
-                    self.addToken(Simbolo.comillaSimple, "'",self.pos)
-                elif self.caracterActual == "|":
-                    self.addToken(Simbolo.Simor, "|",self.pos)
-                elif self.caracterActual=="&":
-                    self.addToken(Simbolo.IgualF,"&",self.pos)
-                print(f" estoy en el estado {self.estado}  con el simbolo {self.caracterActual} ")
-                
+            if self.caracterActual == "{":
+                self.addToken(Simbolo.llaveIzq, "{",self.pos)                   
+            elif self.caracterActual == "}":
+                self.addToken(Simbolo.llaveDer, "}",self.pos)
+            elif self.caracterActual == ":":
+                self.addToken(Simbolo.Dpuntos, ":",self.pos)
+            elif self.caracterActual == ";":
+                self.addToken(Simbolo.Pcoma, ";",self.pos)
+            elif self.caracterActual == ",":
+                self.addToken(Simbolo.coma, ",",self.pos)
+            elif self.caracterActual == "=":
+                self.addToken(Simbolo.Igual, "=",self.pos)
+            elif self.caracterActual == "+":
+                self.addToken(Simbolo.Mas, "+",self.pos)
+            elif self.caracterActual == "-":
+                self.addToken(Simbolo.Menos, "-",self.pos)
+            elif self.caracterActual == "*":
+                self.addToken(Simbolo.Asterisco, "*",self.pos)
+            elif self.caracterActual == "/":
+                self.addToken(Simbolo.Division, "/",self.pos)
+            elif self.caracterActual == "(":
+                self.addToken(Simbolo.ParentIzq, "(",self.pos)
+            elif self.caracterActual == ")":
+                self.addToken(Simbolo.ParentDer, ")",self.pos)
+            elif self.caracterActual == "'":
+                self.addToken(Simbolo.comillaSimple, "'",self.pos)
                
             # S0 -> S2 (Numeros)
             elif self.caracterActual.isnumeric():
-                self.estado=2
+        
                 sizeLexema = self.getSizeLexema(self.pos)
                 self.S2(self.pos, self.pos+sizeLexema)
                 self.pos = self.pos+sizeLexema
                 
             # S0 -> Reservadas | Identificadores
             elif self.caracterActual.isalpha() : 
-                self.estado=3 
+                
                 sizeLexema = self.getSizeLexema(self.pos)
                 self.analizar_Id_Reservada(self.pos, self.pos+sizeLexema)
                 self.pos = self.pos+sizeLexema
             
-            # S0 -> '#'
-            elif self.caracterActual == "#" :  
-                self.estado=3
+        
+            # S0 -> '.'
+            elif self.caracterActual== ".":
                 sizeLexema = self.getSizeLexema(self.pos)
                 self.analizar_Id_Reservada(self.pos, self.pos+sizeLexema)
                 self.pos = self.pos+sizeLexema
-            # S0 -> '.'
-            elif self.caracterActual== ".":
-                self.estado=3
+            
+            elif self.caracterActual== "#":
+               
                 sizeLexema = self.getSizeLexema(self.pos)
                 self.analizar_Id_Reservada(self.pos, self.pos+sizeLexema)
                 self.pos = self.pos+sizeLexema
 
-            elif self.caracterActual=="\*":
-                print("a")
+            elif self.caracterActual== "_":
+                print("ebnto en fbajop")
+                sizeLexema = self.getSizeLexema(self.pos)
+                self.analizar_Id_Reservada(self.pos, self.pos+sizeLexema)
+                self.pos = self.pos+sizeLexema
+
+            
             # Otros
             elif self.caracterActual == " " or self.caracterActual == "\t" or self.caracterActual == "\r" or self.caracterActual == "\n":  
                 self.pos += 1 #incremento del contador del while
@@ -140,8 +114,41 @@ class Scanner:
         else:
             return "La entrada que ingresaste fue: " + self.entrada + "\nAnalisis exitoso..!!!"
             
-
-    #--------------------------- ESTADO2 ---------------------------
+    def S1(self,posActual):
+            letra=self.entrada[posActual]
+            if letra == "{":
+                self.addToken(Simbolo.llaveIzq, "{",posActual)                   
+            elif letra == "}":
+                self.addToken(Simbolo.llaveDer, "}",self.pos)
+            elif letra == ":":
+                self.addToken(Simbolo.Dpuntos, ":",self.pos)
+            elif letra == ";":
+                self.addToken(Simbolo.Pcoma, ";",self.pos)
+            elif letra == ",":
+                self.addToken(Simbolo.coma, ",",self.pos)
+            
+            elif letra == "=":
+                self.addToken(Simbolo.Igual, "=",self.pos)
+            
+            elif letra == "+":
+                self.addToken(Simbolo.Mas, "+",self.pos)
+            elif letra == "-":
+                self.addToken(Simbolo.Menos, "-",self.pos)
+            elif letra == "*":
+                self.addToken(Simbolo.Asterisco, "*",self.pos)
+            elif letra == "/":
+                self.addToken(Simbolo.Division, "/",self.pos)
+            elif letra == "(":
+                self.addToken(Simbolo.ParentIzq, "(",self.pos)
+            elif letra == ")":
+                self.addToken(Simbolo.ParentDer, ")",self.pos)
+            elif letra == "'":
+                self.addToken(Simbolo.comillaSimple, "'",self.pos)
+           
+            else:
+                print(" ERROR LEXICO ", self.entrada[self.pos])
+    
+    #--------------------------- ESTADO2 ---------------------------  numero letra error
     def S2(self, posActual, fin):
         c = '' 
         while posActual < fin:
@@ -149,26 +156,35 @@ class Scanner:
 
             # S2 -> S2 (Numero)
             if c.isnumeric():
-                self.estado=2
                 self.lexema += c
                 if(posActual+1 == fin):
                     self.addToken(Simbolo.VALOR, self.lexema,self.pos)
-                    print(f" estoy en el estado {self.estado}  con el simbolo {c} ")
                 
             # S2 -> S3 (letra)
             elif c.isalpha():
-                self.estado=3
                 self.S3(posActual, fin)
                 break
+
+            elif c=="%":
+                self.lexema += c
+                if(posActual+1 == fin):
+                    self.addToken(Simbolo.VALOR, self.lexema,self.pos)
+                
                 
             # S2 -> ERROR_LEXICO
-            else:                    
-                self.addError(c,posActual)
-                print("Error Lexico: ", c)
+            else:
+                if not c.isalpha() and not c.isdigit() and not c.isalnum():
+                    self.S1(posActual)
+                    break               
+                else:
+                    self.addError(c,posActual)
+                    print("Error Lexico: ", c)
             
             posActual += 1
 
-    #--------------------------- ESTADO3 ---------------------------
+        print("estado 2 ", self.lexema)
+
+    #--------------------------- ESTADO3 ---------------------------  letra tras letra NUMERO
     def S3(self, posActual, fin):
         c = ''
         while posActual < fin:
@@ -176,23 +192,26 @@ class Scanner:
         
             # S3 -> S3 (letra)
             if c.isalpha():
-                self.estado=3
                 self.lexema += c
                 if(posActual+1 == fin):
                     self.addToken(Simbolo.VALOR, self.lexema,self.pos)
                     print(f" estoy en el estado {self.estado}  con el simbolo {c} ")
+            #S3 -> S2 NUMERO
             elif c.isnumeric():
-                self.estado=2
                 self.S2(posActual,fin)
                 break
             
                 
             # S2 -> ERROR_LEXICO
             else:
-                self.addError(c,posActual)
-                print("Error Lexico: ", c)
+                if not c.isalpha() and not c.isdigit() and not c.isalnum():
+                    self.S1(posActual)
+                    break               
+                else:
+                    self.addError(c,posActual)
+                    print("                 Error Lexico: ", c)
             posActual += 1
-
+        print("estado 3 ", self.lexema)
 
     def imprimirSimbolos(self):
         for x in self.lista_tokens:
@@ -353,6 +372,29 @@ class Scanner:
                 self.S6(posActual+1, fin)
                 break
 
+            # S0 -> S5 ('-')
+            elif c == "-":
+                self.lexema += c
+                
+                # S5 -> S6 (letra)
+                self.S6(posActual+1, fin)
+                break
+
+
+            elif c == "_":
+                self.lexema += c
+                print("entra en de reservada")
+                # S5 -> S6 (letra)
+                self.S6(posActual+1, fin)
+                break
+            # S0 -> S5 ('.')
+            elif c == ".":
+                self.lexema += c
+                
+                # S5 -> S6 (letra)
+                self.S6(posActual+1, fin)
+                break
+
             # S0 -> S6 (letra)
             elif c.isalpha():
                 self.S6(posActual, fin)
@@ -364,42 +406,41 @@ class Scanner:
                 print("Error Lexico: ", c)
             
             posActual += 1
-            
+        print("reservadas ", self.lexema)          
     #--------------------------- ESTADO6 ---------------------------
     def S6(self, posActual, fin):
-        c = ''
+        c = ""
         while posActual < fin:
             c = self.entrada[posActual]
         
             # S6 -> S6 (letra)
             if c.isalpha():
-                self.estado=3
                 self.lexema += c
                 if(posActual+1 == fin):
-                    self.addToken(Simbolo.ID, self.lexema,self.pos)
-                    print(f" estoy en el estado {self.estado}  con el simbolo {c} ")
-
+                    #self.addToken(Simbolo.ID, self.lexema,self.pos)
+                    self.S3(posActual+1,fin)
             # S6 -> S6 (Numero)
             elif c.isnumeric():
-                self.estado=2
                 self.lexema += c
                 if(posActual+1 == fin):
-                    self.addToken(Simbolo.ID, self.lexema,self.pos)
-                    print(f" estoy en el estado {self.estado}  con el simbolo {c} ")
-            
-            # S6 -> S6 ('-')
-            elif c == "-":
+                    #self.addToken(Simbolo.ID, self.lexema,self.pos)
+                    self.S2(posActual+1,fin)
+
+            elif c=="_":
                 self.lexema += c
                 if(posActual+1 == fin):
-                    self.addToken(Simbolo.ID, self.lexema,self.pos)
+                    #self.addToken(Tipo.ID, self.lexema)
+                    self.S2(posActual+1,fin)
 
             # S6 -> ERROR_LEXICO
             else:
+                
                 self.addError(c,posActual)
                 print("Error Lexico: ", c)
 
             posActual += 1
 
+        print("estado 6 ", self.lexema)
     #--------------------------- ESTADO_ERROR ---------------------------
     def addError(self ,valor,pos):
         nuevo = Errores( valor,pos)
