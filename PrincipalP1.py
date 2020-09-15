@@ -5,7 +5,7 @@ from tkinter import filedialog      # filechooser
 from tkinter import scrolledtext    # textarea
 from tkinter import messagebox      # message box
 from pru import *     # llamando a una funcion externa
-#from AnalisisJs import *
+from AnalisisJs import *
 
 class GUI:
  # Metodo que contiene la definicion de la interfaz grafica 
@@ -56,9 +56,9 @@ class GUI:
         self.report_item.add_command(label='Errors')
         self.report_item.add_separator()
         self.report_item.add_command(label='Tree')
-
+        
         self.menu.add_cascade(label='File', menu=self.file_item)
-        self.menu.add_cascade(label='Reports', menu=self.report_item)
+        self.menu.add_cascade(label='Reports', menu=self.report_item) 
         self.window.config(menu=self.menu)
         
         # propiedades del textarea
@@ -77,13 +77,19 @@ class GUI:
         # Dispara la interfaz
         self.window.mainloop()
 
+
     def Analyze(self):
         entrada = self.txtEntrada.get("1.0", END) #fila 1 col 0 hasta fila 2 col 10
-        #miScanner = Scanner()
-        #retorno = miScanner.analizar(entrada)
-        #miScanner.imprimirErrores()
-        analiza= Scanner()
-        retorno =analiza.analizar(entrada)
+        miScanner = ANALIZADORJS()
+        retorno = miScanner.analizar(entrada)
+        miScanner.imprimirErrores()
+        print("\n\n")
+        miScanner.imprimirtoken()
+        #analiza= Scanner()
+        #retorno =analiza.analizar(entrada)
+        #analiza.res()
+        #print("\n\n")
+        #analiza.res1()
         #self.txtConsola.delete("1.0", END)
         #self.txtConsola.insert("1.0", retorno)
     

@@ -60,7 +60,7 @@ class Token:
         self.tipoToken = tipo
         self.valorToken = valor
     def __str__(self):
-        return f"Palabra Reservada {self.valorToken}"
+        return f"Palabra Reservada {self.valorToken}    {self.tipoToken}"
 
 class Errores:
     valorToken = ""

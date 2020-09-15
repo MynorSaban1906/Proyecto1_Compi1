@@ -23,6 +23,7 @@ class Simbolo(Enum):
     NotaLambda=20
     comillaSimple=38
     Simor=39
+    ComillaD=100
 
     #palabras reservadas
     DeclaracionJS=21
@@ -111,3 +112,13 @@ class Errores:
 
     def __str__(self):
         return f"Simbolo Error {self.valorToken}  posicion {self.posicion} "
+
+class Reservation:
+    tipoToken = Simbolo.epsilon
+    valorToken = ""
+    def __init__(self, tipo, valor):
+        self.tipoToken = tipo
+        self.valorToken = valor
+
+    def __str__(self):
+        return f"Palabra Reservada -> {self.valorToken}  "
