@@ -60,17 +60,33 @@ class Token:
         self.tipoToken = tipo
         self.valorToken = valor
     def __str__(self):
-        return f"Palabra Reservada {self.valorToken}    {self.tipoToken}"
+        return f"TOKEN ->  {self.valorToken}  TIPO -> {self.tipoToken}"
+        
+class Recorrido:
+    simbolo=""
+    inicial=0
+    final=0
+    tipo=Tipo.NINGUNO
+    def __init__(self,simbolo,einicial,efinal,tipo):
+        self.simbolo=simbolo
+        self.inicial=einicial
+        self.final=efinal
+        self.tipo=tipo
+    def __str__(self):
+        return f"Estado Inicial {self.inicial}  Transicion -> {self.simbolo}    Estado Final {self.final}"
+        
 
 class Errores:
     valorToken = ""
     posicion=0
     colum=0
-    def __init__(self, valor,pos,columnas):
+    line=0
+    def __init__(self, valor,pos,columnas,linea):
         
         self.valorToken = valor
         self.posicion =pos
         self.colum=columnas
+        self.line=linea
 
     def __str__(self):
-        return f"Simbolo Error {self.valorToken}  posicion {self.posicion}  columna  {self.colum }"
+        return f"Simbolo Error -> {self.valorToken}   posicion -> {self.posicion}  columna -> {self.colum }  linea -> {self.line}"

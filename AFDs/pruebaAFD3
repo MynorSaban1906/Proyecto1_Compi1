@@ -1,0 +1,9 @@
+// hkol
+digraph {
+	"Estado 0" [label="Estado 0" shape=circle]
+	"Estado 0" -> "Estado 4" [label="!"]
+	"Estado 4" [label="Estado 4" shape=circle]
+	"Estado 4" -> "Estado 5" [label=Letra]
+	"Estado 5" [label="Estado 5" shape=doublecircle]
+	"Estado 5" -> "Estado 5" [label="Numero| Letra | _ |-"]
+}

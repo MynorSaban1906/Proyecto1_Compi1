@@ -8,10 +8,11 @@ class Scanner:
     # estado = 0
     lexema = ""
     lista_reservadas=list()
-    simbolosiste=list()
+    transiciones=list()
+
 
     def __init__(self):
-        self.simbolosiste=list()
+        self.transiciones=list()
         self.lista_tokens = list()
         self.lista_errores = list()
         self.pos_errores = list()
@@ -19,22 +20,24 @@ class Scanner:
         self.lexema = ""
         self.lista_reservadas=list()
 
-    # --------------- reservadas -----
-    def res(self):
-        for i in self.lista_reservadas:
-            print(i)
 
-    def res1(self):
+
+    def imprimirTokens(self):
+        li=""
         for i in self.lista_tokens:
+            li+=str(i)
             print(i)
+            li+="\n"
+        return li
     
 
     #--------------------------- ESTADO0 ---------------------------
     def analizar(self, cadena):
         self.entrada = cadena + "$"
-        #self.estado = 0
+        self.estado = 0
         self.caracterActual = ''
-        
+        self.columna=0
+        self.linea=1
         pos = 0    # almacena la posicion del caracter que se esta analizando
         #for self.pos in range(0,len(self.entrada)-1):
         while pos < len(self.entrada):
@@ -65,7 +68,11 @@ class Scanner:
                         pos+=1
                 pos+=self.getSizeLexema(pos)+1
                 print(come)
-
+            
+            elif self.caracterActual=="\n":
+                self.linea+=1
+                self.columna=0
+                continue
 
             # S0 -> S1 (Simbolos del Lenguaje)
             elif self.caracterActual == "{":
@@ -96,35 +103,50 @@ class Scanner:
 
             # S0 -> S2 (Numeros)
             elif self.caracterActual.isnumeric():
-                sizeLexema = self.getSizeLexema(pos)
+                self.estado=0
+                sizeLexema = self.getSizeDigito(pos)
                 self.S2(pos, pos+sizeLexema)
                 pos = pos+sizeLexema
+            
                 
             # S0 -> Reservadas | Identificadores
             elif self.caracterActual.isalpha() :  
+                self.estado=0
                 sizeLexema = self.getSizeLexema(pos)
                 self.analizar_Id_Reservada(pos, pos+sizeLexema)
                 pos = pos+sizeLexema
+                continue
             
             # S0 -> '#' -> letra
             elif self.caracterActual == "#" and self.entrada[pos+1].isalpha() :  
+                self.estado=0
                 sizeLexema = self.getSizeLexema(pos)
                 self.S6(pos, pos+sizeLexema)
                 pos = pos+sizeLexema
+                continue
             
             # S0 -> '#' -> numero color hexadecimal
-            elif self.caracterActual == "#" and self.entrada[pos+1].isalnum():  
+            elif self.caracterActual == "#" and self.entrada[pos+1].isalnum():
+                self.estado=0 
                 sizeLexema = self.getSizeLexema(pos)
-                self.S2(pos, pos+sizeLexema)
+                self.S6(pos, pos+sizeLexema)
                 pos = pos+sizeLexema
+                continue
 
 
-            # S0 -> '.'
-            elif self.caracterActual == "." :  
+            # S0 -> '.' Q
+            elif self.caracterActual == "." : 
+                self.estado=0
                 sizeLexema = self.getSizeLexema(pos)
-                self.analizar_Id_Reservada(pos, pos+sizeLexema)
+                self.S3(pos, pos+sizeLexema)
                 pos = pos+sizeLexema
-
+                continue
+            elif self.caracterActual == ":" :  
+                self.estado=0
+                sizeLexema = self.getSizeLexema(pos)
+                self.S3(pos, pos+sizeLexema)
+                pos = pos+sizeLexema
+                continue
             # Otros
             elif self.caracterActual == " " or self.caracterActual == "\t" or self.caracterActual == "\r" or self.caracterActual == "\n":  
                 pos += 1 #incremento del contador del while
@@ -148,70 +170,111 @@ class Scanner:
         else:
             return "La entrada que ingresaste fue: " + self.entrada + "\nAnalisis exitoso..!!!"
             
-
+    #======re
+    def recorri(self):
+        for x in self.transiciones:
+            print(x)
     #--------------------------- ESTADO2 ---------------------------
     def S2(self, posActual, fin): 
         c = '' 
+        esta=2
         while posActual < fin:
             c = self.entrada[posActual]
 
             # S2 -> S2 (Numero)
-            if c.isnumeric() :
+            if c.isnumeric():
+                esta=2
                 self.lexema += c
                 if(posActual+1 == fin):
+                    self.addTransicion(c,self.estado,esta)
                     self.addToken(Simbolo.VALOR, self.lexema,posActual)
+                self.addTransicion(c,self.estado,esta)
+                self.estado=esta
                 
             # S2 -> S3 (letra)
             elif c.isalpha():
-                self.lexema+=c
+                esta=2
+                self.lexema += c
                 if(posActual+1 == fin):
-                    self.addToken(Simbolo.VALOR, self.lexema,posActual)
-            
-            
+                    self.addTransicion(c,self.estado,esta)
+                    self.addToken(Simbolo.ID, self.lexema,posActual)
+                self.addTransicion(c,self.estado,esta)
+                self.estado=esta
+
             elif c=="%":
-                self.lexema+=c
+                self.lexema += c
                 if(posActual+1 == fin):
-                    self.addToken(Simbolo.VALOR, self.lexema,posActual)
-                
+                    self.addTransicion(c,self.estado,1)
+                    self.addToken(Simbolo.ID, self.lexema,posActual)
+                    self.estado=1
+
             elif c==".":
-                self.lexema+=c
-                if(posActual+1 == fin):
-                    self.addToken(Simbolo.VALOR, self.lexema,posActual)
-            elif c=="#":
-                self.lexema+=c
-                if(posActual+1 == fin):
-                    self.addToken(Simbolo.VALOR, self.lexema,posActual)
+                self.lexema += c
+                self.addTransicion(c,self.estado,1)
+                self.estado=1
+
             # S2 -> ERROR_LEXICO
-            else:                    
-                self.pos_errores.append(posActual)
+            else:
+                
                 print("Error Lexico: ", c)
             
             posActual += 1
-
-        print("Estado 2  -> ",self.lexema)
-        self.caracterActual = ""
-        self.lexema = ""  
-
+        self.recorri()
+        self.imprimirTokens()
     #--------------------------- ESTADO3 ---------------------------
     def S3(self, posActual, fin):
         c = ''
+        esta=4
         while posActual < fin:
             c = self.entrada[posActual]
         
             # S3 -> S3 (letra)
             if c.isalpha():
+                esta=4
                 self.lexema += c
                 if(posActual+1 == fin):
-                    self.addToken(Simbolo.VALOR, self.lexema,posActual)
+                    self.addToken(Simbolo.ID, self.lexema,posActual)
+                    self.addTransicion(c,self.estado,esta)
+                self.addTransicion(c,self.estado,4)
+                self.estado=esta
                     
+            elif c.isalnum():
+                esta=4
+                self.lexema += c
+                if(posActual+1 == fin):
+                    self.addToken(Simbolo.ID, self.lexema,posActual)
+                    self.addTransicion(c,self.estado,esta)
+                self.addTransicion(c,self.estado,esta)
+                self.estado=esta
+
+            elif c=="-":
+                self.lexema += c
+                self.addTransicion(c,self.estado,5)
+                self.estado=5
+            
+            elif c==".":
+                self.lexema += c
+                self.addTransicion(c,self.estado,5)
+                self.estado=5
+
+            elif c==":":
+                self.lexema += c
+                self.addTransicion(c,self.estado,5)
+                self.estado=5
+
+            elif c=="_":
+                self.lexema += c
+                self.addTransicion(c,self.estado,5)
+                self.estado=5
+            
             # S2 -> ERROR_LEXICO
             else:
                 self.pos_errores.append(posActual)
                 print("Error Lexico: ", c)
             posActual += 1
-        print("Estado 3 ->  ",self.lexema)
-        self.caracterActual = ""
-        self.lexema = ""  
+
+        self.imprimirTokens()
+        self.recorri()
 
     #--------------------------- RESERVADAS/ID ---------------------------
     def analizar_Id_Reservada(self, posActual, fin):
@@ -220,124 +283,126 @@ class Scanner:
 
         # S0 -> S4 (Palabras Reservadas)
         if (self.lexema.lower() == "color"):
-            self.addTokens(Simbolo.color, "color",posActual)
+            self.addToken(Simbolo.color, "color",posActual)
+            self.addTransicion(self.lexema,self.estado,6)
             return
         elif(self.lexema.lower() == "border"):
-            self.addTokens(Simbolo.border, "border",posActual)
+            self.addToken(Simbolo.border, "border",posActual)
             return
         elif(self.lexema.lower() == "text-align"):
-            self.addTokens(Simbolo.textaling, "text-aling",posActual)
+            self.addToken(Simbolo.textaling, "text-aling",posActual)
             return
         elif(self.lexema.lower() == "font-weight"):
-            self.addTokens(Simbolo.COLOR, "font-weight",posActual)
+            self.addToken(Simbolo.COLOR, "font-weight",posActual)
             return
         elif(self.lexema.lower() == "padding-left"):
-            self.addTokens(Simbolo.paddingleft, "padding-left",posActual)
+            self.addToken(Simbolo.paddingleft, "padding-left",posActual)
             return
         elif(self.lexema.lower() == "padding-top"):
-            self.addTokens(Simbolo.paddingtop, "padding-top",posActual)
+            self.addToken(Simbolo.paddingtop, "padding-top",posActual)
             return
         elif(self.lexema.lower() == "line-height"):
-            self.addTokens(Simbolo.lineheight, "line-height",posActual)
+            self.addToken(Simbolo.lineheight, "line-height",posActual)
             return
         elif(self.lexema.lower() == "margin-top"):
-            self.addTokens(Simbolo.margintop, "margin-top",posActual)
+            self.addToken(Simbolo.margintop, "margin-top",posActual)
             return
         elif(self.lexema.lower() == "margin-left"):
-            self.addTokens(Simbolo.marginleft, "margin-left",posActual)
+            self.addToken(Simbolo.marginleft, "margin-left",posActual)
             return
         elif(self.lexema.lower() == "display"):
-            self.addTokens(Simbolo.display, "display",posActual)
+            self.addToken(Simbolo.display, "display",posActual)
             return
         elif(self.lexema.lower() == "top"):
-            self.addTokens(Simbolo.top, "top",posActual)
+            self.addToken(Simbolo.top, "top",posActual)
             return
         elif(self.lexema.lower() == "float"):
-            self.addTokens(Simbolo.flotante, "float",posActual)
+            self.addToken(Simbolo.flotante, "float",posActual)
             return
         elif(self.lexema.lower() == "min-width"):
-            self.addTokens(Simbolo.minwidth, "min-width",posActual)
+            self.addToken(Simbolo.minwidth, "min-width",posActual)
             return
         elif(self.lexema.lower() == "font-weight"):
-            self.addTokens(Simbolo.COLOR, "font-weight",posActual)
+            self.addToken(Simbolo.COLOR, "font-weight",posActual)
             return
         elif(self.lexema.lower() == "background-color"):
-            self.addTokens(Simbolo.backgroundc, "background-color",posActual)
+            self.addToken(Simbolo.backgroundc, "background-color",posActual)
             return
         elif(self.lexema.lower() == "opacity"):
-            self.addTokens(Simbolo.opacity, "opacity",posActual)
+            self.addToken(Simbolo.opacity, "opacity",posActual)
             return        
         elif(self.lexema.lower() == "font-family"):
-            self.addTokens(Simbolo.fontfamily, "font-family",posActual)
+            self.addToken(Simbolo.fontfamily, "font-family",posActual)
             return
         elif(self.lexema.lower() == "font-size"):
-            self.addTokens(Simbolo.fontsize, "font-size",posActual)
+            self.addToken(Simbolo.fontsize, "font-size",posActual)
             return
         elif(self.lexema.lower() == "padding-right"):
-            self.addTokens(Simbolo.paddingright, "padding-right",posActual)
+            self.addToken(Simbolo.paddingright, "padding-right",posActual)
             return
         elif(self.lexema.lower() == "padding"):
-            self.addTokens(Simbolo.padding, "padding",posActual)
+            self.addToken(Simbolo.padding, "padding",posActual)
             return
         elif(self.lexema.lower() == "width"):
-            self.addTokens(Simbolo.width, "width",posActual)
+            self.addToken(Simbolo.width, "width",posActual)
             return
         elif(self.lexema.lower() == "margin-right"):
-            self.addTokens(Simbolo.marginright, "margin-right",posActual)
+            self.addToken(Simbolo.marginright, "margin-right",posActual)
             return
         elif(self.lexema.lower() == "position"):
-            self.addTokens(Simbolo.position, "position",posActual)
+            self.addToken(Simbolo.position, "position",posActual)
             return
         elif(self.lexema.lower() == "right"):
-            self.addTokens(Simbolo.right, "right",posActual)
+            self.addToken(Simbolo.right, "right",posActual)
             return
         elif(self.lexema.lower() == "clear"):
-            self.addTokens(Simbolo.clear, "clear",posActual)
+            self.addToken(Simbolo.clear, "clear",posActual)
             return
         elif(self.lexema.lower() == "max-height"):
-            self.addTokens(Simbolo.maxheight, "max-height",posActual)
+            self.addToken(Simbolo.maxheight, "max-height",posActual)
             return
         elif(self.lexema.lower() == "background-image"):
-            self.addTokens(Simbolo.backgroundi, "background-image",posActual)
+            self.addToken(Simbolo.backgroundi, "background-image",posActual)
             return
         elif(self.lexema.lower() == "background"):
-            self.addTokens(Simbolo.background, "background",posActual)
+            self.addToken(Simbolo.background, "background",posActual)
             return
         elif(self.lexema.lower() == "font-style"):
-            self.addTokens(Simbolo.fontstyle, "font-style",posActual)
+            self.addToken(Simbolo.fontstyle, "font-style",posActual)
             return
         elif(self.lexema.lower() == "font"):
-            self.addTokens(Simbolo.font, "font",posActual)
+            self.addToken(Simbolo.font, "font",posActual)
             return
         elif(self.lexema.lower() == "padding-bottom"):
-            self.addTokens(Simbolo.paddingbottom, "padding-bottom",posActual)
+            self.addToken(Simbolo.paddingbottom, "padding-bottom",posActual)
             return
         elif(self.lexema.lower() == "height"):
-            self.addTokens(Simbolo.height, "height",posActual)
+            self.addToken(Simbolo.height, "height",posActual)
             return
         elif(self.lexema.lower() == "margin-bottom"):
-            self.addTokens(Simbolo.marginbottom, "margin-bottom",posActual)
+            self.addToken(Simbolo.marginbottom, "margin-bottom",posActual)
             return
         elif(self.lexema.lower() == "border-style"):
-            self.addTokens(Simbolo.borderstyle, "border-style",posActual)
+            self.addToken(Simbolo.borderstyle, "border-style",posActual)
             return     
         elif(self.lexema.lower() == "bottom"):
-            self.addTokens(Simbolo.bottom, "bottom",posActual)
+            self.addToken(Simbolo.bottom, "bottom",posActual)
             return
         elif(self.lexema.lower() == "left"):
-            self.addTokens(Simbolo.left, "left",posActual)
+            self.addToken(Simbolo.left, "left",posActual)
             return
         elif(self.lexema.lower() == "max-width"):
-            self.addTokens(Simbolo.maxwidth, "max-width",posActual)
+            self.addToken(Simbolo.maxwidth, "max-width",posActual)
             return
         elif(self.lexema.lower() == "min-height"):
-            self.addTokens(Simbolo.minheight, "min-height",posActual)
+            self.addToken(Simbolo.minheight, "min-height",posActual)
             return
 
         
         
             # S0 -> ERROR_LEXICO
         
+        self.estado=0
         self.lexema = ""
         c = ''
         while posActual < fin:
@@ -348,83 +413,83 @@ class Scanner:
                 self.lexema += c
                 
                 # S5 -> S6 (letra)
-                self.S6(posActual, fin)
-                break
-            elif c == ".":
-                self.lexema += c
-                
-                # S5 -> S6 (letra)
-                self.S6(posActual, fin)
+                self.S6(posActual+1, fin)
                 break
 
             # S0 -> S6 (letra)
             elif c.isalpha():
-                self.lexema+=c
-                if(posActual+1 == fin):
-                    self.addToken(Simbolo.ID, self.lexema,posActual)
+                self.S6(posActual, fin)
                 break
-
-        print("comun  ",self.lexema)
-        self.caracterActual = ""
-        self.lexema = ""  
             
+            # S0 -> ERROR_LEXICO
+            else:
+                self.pos_errores.append(posActual)
+                print("Error Lexico: ", c)
+            
+            posActual += 1
+
+
     # ------------------------ ESTADO 1--------------------------
 
-    def S1(self,posActual):
+    def S1(self,posActual,inicio):
             letra=self.entrada[posActual]
             if letra == "{":
-                self.addToken(Simbolo.llaveIzq, "{",posActual)                   
+                self.addTransicion("{",inicio,1)
+                inicio=1                 
             elif letra == "}":
-                self.addToken(Simbolo.llaveDer, "}",posActual)
+                self.addTransicion("}",inicio,1)
+                inicio=1 
             elif letra == ":":
-                self.addToken(Simbolo.Dpuntos, ":",posActual)
+                self.addTransicion(":",inicio,1)
+                inicio=1 
             elif letra == ";":
-                self.addToken(Simbolo.Pcoma, ";",posActual)
+                self.addTransicion(";",inicio,1)
+                inicio=1 
             elif letra == ",":
-                self.addToken(Simbolo.coma, ",",posActual)
-            
+                self.addTransicion(",",inicio,1)
+                inicio=1 
             elif letra == "=":
-                self.addToken(Simbolo.Igual, "=",posActual)
-            
+                self.addTransicion("=",inicio,1)
+                inicio=1 
             elif letra == "+":
-                self.addToken(Simbolo.Mas, "+",posActual)
+                self.addTransicion("+",inicio,1)
+                inicio=1 
             elif letra == "-":
-                self.addToken(Simbolo.Menos, "-",posActual)
+                self.addTransicion("-",inicio,1)
+                inicio=1 
             elif letra == "*":
-                self.addToken(Simbolo.Asterisco, "*",posActual)
+                self.addTransicion("*",inicio,1)
+                inicio=1 
             elif letra == "/":
-                self.addToken(Simbolo.Division, "/",posActual)
+                self.addTransicion("/",inicio,1)
+                inicio=1 
             elif letra == "(":
-                self.addToken(Simbolo.ParentIzq, "(",posActual)
+                self.addTransicion("(",inicio,1)
+                inicio=1 
             elif letra == ")":
-                self.addToken(Simbolo.ParentDer, ")",posActual)
+                self.addTransicion(")",inicio,1)
+                inicio=1 
             elif letra == "'":
-                self.addToken(Simbolo.comillaSimple, "'",posActual)
+                self.addTransicion("'",inicio,1)
+                inicio=1 
             elif letra=='"':
-                self.addToken(Simbolo.ComillaD,'"',posActual)
-            elif letra=="#" and self.entrada[posActual+1].isalpha():
-                sizeLexema = self.getSizeLexema(posActual)
-                self.S3(posActual, posActual+sizeLexema)
-                posActual = posActual+sizeLexema
-            elif letra=="#" and self.entrada[posActual+1].isalnum():
-                sizeLexema = self.getSizeLexema(posActual)
-                self.S2(posActual, posActual+sizeLexema)
-                posActual = posActual+sizeLexema
+                self.addTransicion('"',inicio,1)
+                inicio=1 
             
 
             else:
-                print(" ERROR LEXICO ", self.entrada[posActual])
+                self.columna+=1
+                print(" ERROR LEXICO S1 ", self.entrada[posActual])
             
+            return inicio
             
-            self.caracterActual = ""
-            self.lexema = ""  
     
     #--------------------------- ESTADO6 ---------------------------
     def S6(self, posActual, fin):
         c = ''
         while posActual < fin:
             c = self.entrada[posActual]
-
+        
             # S6 -> S6 (letra)
             if c.isalpha():
                 self.lexema += c
@@ -442,68 +507,81 @@ class Scanner:
                 self.lexema += c
                 if(posActual+1 == fin):
                     self.addToken(Simbolo.ID, self.lexema,posActual)
-            elif c=="#":
-                self.lexema+=c
-                if(posActual+1 == fin):
-                    self.addToken(Simbolo.ID, self.lexema,posActual)
-            elif c==".":
-                self.lexema+=c
-                if(posActual+1 == fin):
-                    self.addToken(Simbolo.ID, self.lexema,posActual)
+
             # S6 -> ERROR_LEXICO
             else:
-                if not c.isalpha() and not c.isnumeric():
-                    self.lexema+=c
-                    self.S1(posActual)
-                else:
-                    self.pos_errores.append(posActual)
-                    print("Error Lexico: ", c)
+                self.pos_errores.append(posActual)
+                print("Error Lexico: ", c)
 
             posActual += 1
-        print("s6 ",self.lexema)
-       
-
-
     #--------------------------- ESTADO_ERROR ---------------------------
-    def addError(self, entrada, estado):
-        
-        return 0
-
+ 
     #--------------------------- ADD TOKEN ---------------------------
     def addToken(self, tipo, valor,pos):
         nuevo = Token(tipo, valor,pos)
         self.lista_tokens.append(nuevo)
-        print("TOKEN -> ",valor)
-        self.lexema = ""  
+        self.lexema=""
+        self.caracterActual==""
 
+    #--------- add transicion -- --------
+      
+    def addTransicion(self,valor,inicial,final):
+        nuevo= Transiciones(valor,inicial,final)
+        self.transiciones.append(nuevo)
+        
 
     #---------------- OBTENIENDO EL TAMAÑO DEL LEXEMA ----------------
     def getSizeLexema(self, posInicial):
         longitud = 0
         for i in range(posInicial, len(self.entrada)-1):
-            if self.entrada[i] == " " or self.entrada[i] == "{" or self.entrada[i] == "}" or self.entrada[i] == "," or self.entrada[i] == ";" or self.entrada[i] == ":" or self.entrada[i] == "\n" or self.entrada[i] == "\t" or self.entrada[i] == "\r":# or self.entrada[i] == "$":
+            if self.entrada[i] == " "or self.entrada[i] == "="or self.entrada[i] == "{" or self.entrada[i] == "}" or self.entrada[i] == "," or self.entrada[i] == ";" or self.entrada[i] == ":" or self.entrada[i] == "\n" or self.entrada[i] == "\t" or self.entrada[i] == "\r"  or self.entrada[i] == "(" or self.entrada[i]==")"or self.entrada[i]=="'" or self.entrada[i] =='"' or self.entrada[i]=="/" or self.entrada[i]=="*"or self.entrada[i] =='+':
+                if self.entrada[i]!="\n":
+                    self.columna+=1
+                if self.entrada[i]=="\n":
+                    self.linea+=1
+                    self.columna=0
+                
                 break
+            if self.entrada[i]=="\n":
+                self.linea+=1
+            elif self.entrada[i].isnumeric() or self.entrada[i].isalpha():
+                self.columna+=1
             longitud+=1
         return longitud
 
-    def addTokens(self, tipo, valor,pos):
-        nuevo = Reservation(tipo, valor)
-        self.lista_reservadas.append(nuevo)
-        print("reservada  ",self.lexema)
-        self.lexema=""
-
     #-------------obteniendo tamano de comentario multilinea---
     def getSizecomentario(self, posInicial):
-        longitud=0  
+        longitud=0
             
         for i in range(posInicial, len(self.entrada)-1):
             if self.entrada[i] == " " or self.entrada[i] == "{" or self.entrada[i] == "}" or self.entrada[i] == "," or self.entrada[i] == ";" or self.entrada[i] == ":" or self.entrada[i] == "\n" or self.entrada[i] == "\t" or self.entrada[i] == "\r":# or self.entrada[i] == "$":
-                break
-            
-            elif self.entrada[i]=="*" and self.entrada[i+1]=="/":
-               
-                print("fin mult")
                 
-                longitud=1        
+                break
+            elif self.entrada[i]=="\n":
+                self.linea+=1
+            elif self.entrada[i]=="*" and self.entrada[i+1]=="/":
+                self.linea+=1
+                print("fin mult",self.linea)
+
+                longitud=1 
+          
         return longitud
 
+    #----------OBTENIENDO TAMANIO DE DIGITOS ----
+    def getSizeDigito(self, posInicial):
+        longitud = 0
+        for i in range(posInicial, len(self.entrada)-1):
+            if self.entrada[i] == " " or self.entrada[i] == "{" or self.entrada[i] == "}" or self.entrada[i] == "," or self.entrada[i] == ";" or self.entrada[i] == ":" or self.entrada[i] == "\n" or self.entrada[i] == "\t" or self.entrada[i] == "\r":
+                if self.entrada[i]!="\n":
+                    self.columna+=1
+                if self.entrada[i]=="\n":
+                    self.linea+=1
+                    self.columna=0
+                break
+            if self.entrada[i]=="\n":
+                self.linea+=1
+            elif self.entrada[i].isnumeric() or self.entrada[i].isalpha():
+                self.columna+=1
+                
+            longitud+=1
+        return longitud

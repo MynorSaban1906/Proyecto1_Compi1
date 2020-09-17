@@ -100,7 +100,7 @@ class Token:
         self.posicion =pos
 
     def __str__(self):
-        return f"Simbolo del sistema {self.valorToken}  posicion {self.posicion} "
+        return f"Token ->  {self.valorToken}  Tipo ->  {self.tipoToken} "
 
 class Errores:
     valorToken = ""
@@ -113,12 +113,16 @@ class Errores:
     def __str__(self):
         return f"Simbolo Error {self.valorToken}  posicion {self.posicion} "
 
-class Reservation:
-    tipoToken = Simbolo.epsilon
+class Transiciones:
     valorToken = ""
-    def __init__(self, tipo, valor):
-        self.tipoToken = tipo
+    estadoI=0
+    estadoF=0
+    def __init__(self, valor,inicial,final):
+        
         self.valorToken = valor
+        self.estadoI=inicial
+        self.estadoF=final
 
     def __str__(self):
-        return f"Palabra Reservada -> {self.valorToken}  "
+        return f"Estado Inicial {self.estadoI} --> Estado Final {self.estadoF}   Con  {self.valorToken}  "
+

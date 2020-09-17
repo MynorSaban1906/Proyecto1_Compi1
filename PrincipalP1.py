@@ -6,6 +6,7 @@ from tkinter import scrolledtext    # textarea
 from tkinter import messagebox      # message box
 from pru import *     # llamando a una funcion externa
 from AnalisisJs import *
+from analizadorCSS import *
 
 class GUI:
  # Metodo que contiene la definicion de la interfaz grafica 
@@ -14,32 +15,12 @@ class GUI:
         
         self.txtEntrada = Entry(self.window,width=10)
         self.txtConsola = Entry(self.window,width=10)
+        self.txtrecorrido=Entry(self.window,width=10)
+        self.txtTOKEN=Entry(self.window,width=10)
         # Propiedades de la ventana
-        self.window.title("Proyecto 1 - ML WEB EDITOR")
-        self.window.geometry('1000x700')
+        self.window.title("Proyecto 1 - MYNOR SABAN")
+        self.window.geometry('1600x1000')
         self.window.configure(bg = '#9ACFEF')
-    
-        root = self.window
-        states = []
-        lenguaje = IntVar()
-        chk = Checkbutton(root, text="JS",  variable=lenguaje,command=self.seleccionar(lenguaje))
-
-        chk.pack(side=LEFT)
-        chk.place(x=0,y=0)
-        
-        chk = Checkbutton(root, text="CSS",  variable=lenguaje,command=self.seleccionar(lenguaje))
-
-        chk.pack(side=LEFT)
-        chk.place(x=50,y=0)
-
-        chk3 = Checkbutton(root, text="HTML",  variable=lenguaje, 
-            onvalue=1, offvalue=0,command=self.seleccionar(lenguaje))
-
-        chk3.pack(side=LEFT)
-        chk3.place(x=100,y=0)
-        
-
-       
               
 
         # propiedades del menu 
@@ -66,14 +47,23 @@ class GUI:
         self.txtEntrada.place(x=50, y = 50)
         #ent = txtEntrada.get("1.0","10.10")
         #print("ent: ",ent)
-
+        self.lbl1 = Label(self.window, text="RECORRIDO:")  #label 
+        self.lbl1.place(x=800, y =35)
+        self.txtrecorrido = scrolledtext.ScrolledText(self.window,width=50,height=20)   # textArea Entrada
+        self.txtrecorrido.place(x=800, y =50)
+        self.lbl2 = Label(self.window, text="TOKENS:")  #label 
+        self.lbl2.place(x=800, y =400)
+        self.txtTOKEN = scrolledtext.ScrolledText(self.window,width=50,height=15)   # textArea Entrada
+        self.txtTOKEN.place(x=800, y = 425)
 
         self.lbl = Label(self.window, text="Console:")  #label 
         self.lbl.place(x=50, y = 465)
         self.txtConsola = scrolledtext.ScrolledText(self.window,width=80,height=10)   # textArea consola
         self.txtConsola.place(x=50, y = 490)
-        self.btn = Button(self.window, text="Analyze", bg="black", fg="white", command=self.Analyze)    #btn Analyze
+        self.btn = Button(self.window, text="JS", bg="black", fg="white", command=self.Analyze)    #btn Analyze
+        self.btn1 = Button(self.window, text="CSS", bg="black", fg="white", command=self.anaCSS) 
         self.btn.place(x=400, y = 460)
+        self.btn1.place(x=350, y = 460)
         # Dispara la interfaz
         self.window.mainloop()
 
@@ -82,18 +72,33 @@ class GUI:
         entrada = self.txtEntrada.get("1.0", END) #fila 1 col 0 hasta fila 2 col 10
         miScanner = ANALIZADORJS()
         retorno = miScanner.analizar(entrada)
+        print("\nIMPRESION DE ERRORES\n")
         miScanner.imprimirErrores()
-        print("\n\n")
-        miScanner.imprimirtoken()
-        #analiza= Scanner()
-        #retorno =analiza.analizar(entrada)
-        #analiza.res()
-        #print("\n\n")
-        #analiza.res1()
-        #self.txtConsola.delete("1.0", END)
-        #self.txtConsola.insert("1.0", retorno)
-    
-        
+        self.txtConsola.insert("1.0", retorno)
+        toke=miScanner.imprimirtoken()
+        self.txtTOKEN.insert("1.0",toke)
+        record=miScanner.imprimirtra()
+        self.txtrecorrido.insert("1.0",record)
+        miScanner.generarGrafo()
+
+    def anaCSS(self):
+        """entrada = self.txtEntrada.get("1.0", END)
+        analiza= Scanner()
+        retorno =analiza.analizar(entrada)
+        self.txtConsola.insert("1.0", retorno)
+        token =analiza.imprimirTokens()
+        self.txtTOKEN.insert("1.0",token)"""
+        entrada= self.txtEntrada.get("1.0",END)
+        analiza=  analizadorCSS()
+        retorno =analiza.analizar(entrada)
+        self.txtConsola.insert("1.0", retorno)
+        token =analiza.imprimirTokens()
+        self.txtTOKEN.insert("1.0",token)
+        recor =analiza.imprimirRecorrido()
+        self.txtrecorrido.insert("1.0",recor)
+        print("Errores")
+        analiza.imprimirErrores()
+        analiza.generarGrafo()
         
 
     # Dispara el Filechooser
@@ -104,7 +109,7 @@ class GUI:
             contenido=archi1.read()
             archi1.close()
             self.txtEntrada.delete("1.0", END)
-            self.txtEntrada.insert("1.0", contenido)
+            self.txtEntrada.insert("1.0", contenido) 
     
     def seleccionar(self,lenguaje):
         cadena = ""
